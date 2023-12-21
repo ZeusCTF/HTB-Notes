@@ -1,0 +1,26 @@
+===============================================================
+Gobuster v3.1.0
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://devzat.htb/
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                /usr/share/wordlists/dirb/big.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.1.0
+[+] Extensions:              php
+[+] Timeout:                 10s
+===============================================================
+2021/10/26 15:38:07 Starting gobuster in directory enumeration mode
+===============================================================
+/.htpasswd            (Status: 403) [Size: 275]
+/.htaccess            (Status: 403) [Size: 275]
+/.htpasswd.php        (Status: 403) [Size: 275]
+/.htaccess.php        (Status: 403) [Size: 275]
+/assets               (Status: 301) [Size: 309] [--> http://devzat.htb/assets/]
+/images               (Status: 301) [Size: 309] [--> http://devzat.htb/images/]
+/javascript           (Status: 301) [Size: 313] [--> http://devzat.htb/javascript/]
+/server-status        (Status: 403) [Size: 275]                                    
+===============================================================
+2021/10/26 15:41:32 Finished
+===============================================================

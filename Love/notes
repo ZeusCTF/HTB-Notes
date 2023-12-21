@@ -1,0 +1,25 @@
+IP = 10.10.10.239
+
+ssl cert mentions: staging.love.htb
+
+looks like the images directory contains some shells - probably need to upload something there
+
+the staging host has a beta.php page, where you are able to upload files to scan, not sure where they go...
+
+looks like these files print their output to the screen, ie the webpage renders the file???
+-----------
+just had to point this at the sql port....
+
+admin | @LoveIsInTheAir!!!! 
+_______________
+
+this login let us access the admin page, which has an account creation thing with an image assocaited with every profile....  Using the basic shell here, I was able to run the profile.exe file that was uploaded seperately.  While using msfconsole, this got me a shell on the box.
+(FYI i used mulit/handler (exploit) to catch the shell)
+
+to get system, a guide used:
+
+exploit/windows/local/always_install_elevated                   2010-03-18       excellent  Yes    Windows AlwaysInstallElevated MSI
+
+within MSF, need to update this later with why/what this does
+
+

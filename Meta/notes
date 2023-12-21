@@ -1,0 +1,72 @@
+Nmap results (first scan):
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 7.9p1 Debian 10+deb10u2 (protocol 2.0)
+| ssh-hostkey: 
+|   2048 12:81:17:5a:5a:c9:c6:00:db:f0:ed:93:64:fd:1e:08 (RSA)
+|   256 b5:e5:59:53:00:18:96:a6:f8:42:d8:c7:fb:13:20:49 (ECDSA)
+|_  256 05:e9:df:71:b5:9f:25:03:6b:d0:46:8d:05:45:44:20 (ED25519)
+80/tcp open  http    Apache httpd
+|_http-server-header: Apache
+|_http-title: Did not follow redirect to http://artcorp.htb
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+(full tcp port scan = nothing new)
+
+Only two ports open, so my initial reaction is to start a full port scan, as well as a UDP port scan.  Also, we can note that the hostname is leaked here, so adding this to the hosts file.
+
+The site itself lists three users:
+Judy E
+Sara W
+Thomas S -> of note, this guy is a PHP dev.
+
+Oddly, I assumed that the site would have an index.php file, but it turns out only to have index.html.  Regardless, I will still scan for both extensions using gobuster.  Possible useful info, the site mentions a product in "testing" so that may be related to a subdomain used for testing resources -> just a thought.
+
+The gobuster dir scan didn't return much, just a bunch of 403s and a couple 301s but when visting the directories I was hit with a 404...
+
+The gobuster vhost scan DID return something.  Just as I originally thought, there appears to be a development sub-domain: Found: dev01.artcorp.htb (Status: 200) [Size: 247] which hosts this "new" app.  I added this to my hosts file and navigated to the metaview dir.  Funny enough, I downloaded exiftool to extract some info from the images on the original site, and the output is almost the same (if not the same) as the output I get when using the metaview tool.
+
+pretty sure this stuff should work:
+https://blog.convisoappsec.com/en/a-case-study-on-cve-2021-22204-exiftool-rce/
+https://github.com/AssassinUKG/CVE-2021-22204
+
+But the site is giving me a "no data was found" or some bullshit even for vaild images...
+Actually it does work, but you need to use an image from the site itself.  testpic.jpg works, so just use that + confile to replace the configfile, and update the payload to a rev shell.
+
+Just use the exploit.py file to generate the payload correctly, you will probably have to update the IP + image but that's easy.  Per some of the fourm notes, you need to check out the processes running on the box, which you can see below some interesting ones I found after runnin pspy
+
+Next stop, investigating these:
+
+/bin/sh -c /usr/local/bin/convert_images.sh 
+2022/01/30 16:19:01 CMD: UID=1000 PID=2820   | /bin/sh -c /usr/local/bin/convert_images.sh 
+2022/01/30 16:19:01 CMD: UID=0    PID=2819   | /usr/sbin/CRON -f 
+2022/01/30 16:19:01 CMD: UID=0    PID=2818   | /usr/sbin/CRON -f 
+2022/01/30 16:19:01 CMD: UID=1000 PID=2824   | /usr/local/bin/mogrify -format png *.* 
+/bin/sh -c cp -rp ~/conf/config_neofetch.conf /home/thomas/.config/neofetch/config.conf 
+2022/01/30 16:20:02 CMD: UID=0    PID=2835   | /bin/sh -c rm /tmp/* 
+
+I gave up...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

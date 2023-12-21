@@ -1,0 +1,17 @@
+ip = 10.10.10.28/
+
+login to /cdn-cgi  - with the creds from last box (admin | MEGACORP_4dm1n!!)
+
+set the cookies to:
+role | super admin
+user | 86575
+
+user creds found in db.php
+robert | M3g4C0rpUs3r!
+
+
+bugtracker
+
+run: find / -group bugtracker
+
+this group was able to execute a binary that read root.txt
