@@ -42,7 +42,7 @@ Google-Fu to get a strapi expliot which created an account for me
 I think two exploits are needed, something about the json portion isnt making sense, perhaps the first exploit is used to get the jwt token, then this: https://www.exploit-db.com/exploits/50238 is used for RCE?
 
 ---------------------
-Yeah fuck this shit, I guess you just need to use the first exploit to request a reverse shell from your machine and pipe it to bash.  I had tried sending these requests to burp to intercept the request thinking that there was something wrong with the request being made but no, I am just going down a rabbit hole.
+I guess you just need to use the first exploit to request a reverse shell from your machine and pipe it to bash.  I had tried sending these requests to burp to intercept the request thinking that there was something wrong with the request being made but no, I am just going down a rabbit hole.
 
 
 /dev/shm/chisel client 10.10.14.163:8001 R:8000:127.0.0.1:8000
