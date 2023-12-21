@@ -1,0 +1,60 @@
+Starting Nmap 7.91 ( https://nmap.org ) at 2021-06-19 16:06 EDT
+NSE: Loaded 153 scripts for scanning.
+NSE: Script Pre-scanning.
+Initiating NSE at 16:07
+Completed NSE at 16:07, 0.00s elapsed
+Initiating NSE at 16:07
+Completed NSE at 16:07, 0.00s elapsed
+Initiating NSE at 16:07
+Completed NSE at 16:07, 0.00s elapsed
+Initiating Ping Scan at 16:07
+Scanning 10.10.10.229 [4 ports]
+Completed Ping Scan at 16:07, 0.14s elapsed (1 total hosts)
+Initiating Parallel DNS resolution of 1 host. at 16:07
+Completed Parallel DNS resolution of 1 host. at 16:07, 0.04s elapsed
+Initiating SYN Stealth Scan at 16:07
+Scanning 10.10.10.229 [1000 ports]
+Discovered open port 3306/tcp on 10.10.10.229
+Discovered open port 22/tcp on 10.10.10.229
+Discovered open port 80/tcp on 10.10.10.229
+Completed SYN Stealth Scan at 16:07, 1.10s elapsed (1000 total ports)
+Initiating Service scan at 16:07
+Scanning 3 services on 10.10.10.229
+Completed Service scan at 16:07, 10.21s elapsed (3 services on 1 host)
+NSE: Script scanning 10.10.10.229.
+Initiating NSE at 16:07
+Completed NSE at 16:07, 7.09s elapsed
+Initiating NSE at 16:07
+Completed NSE at 16:07, 21.17s elapsed
+Initiating NSE at 16:07
+Completed NSE at 16:07, 0.00s elapsed
+Nmap scan report for 10.10.10.229
+Host is up (0.063s latency).
+Not shown: 997 closed ports
+PORT     STATE SERVICE VERSION
+22/tcp   open  ssh     OpenSSH 8.1 (protocol 2.0)
+| ssh-hostkey: 
+|_  4096 52:47:de:5c:37:4f:29:0e:8e:1d:88:6e:f9:23:4d:5a (RSA)
+80/tcp   open  http    nginx 1.17.4
+| http-methods: 
+|_  Supported Methods: GET HEAD
+|_http-server-header: nginx/1.17.4
+|_http-title: Site doesn't have a title (text/html).
+3306/tcp open  mysql   MySQL (unauthorized)
+|_ssl-cert: ERROR: Script execution failed (use -d to debug)
+|_ssl-date: ERROR: Script execution failed (use -d to debug)
+|_sslv2: ERROR: Script execution failed (use -d to debug)
+|_tls-alpn: ERROR: Script execution failed (use -d to debug)
+|_tls-nextprotoneg: ERROR: Script execution failed (use -d to debug)
+
+NSE: Script Post-scanning.
+Initiating NSE at 16:07
+Completed NSE at 16:07, 0.00s elapsed
+Initiating NSE at 16:07
+Completed NSE at 16:07, 0.00s elapsed
+Initiating NSE at 16:07
+Completed NSE at 16:07, 0.00s elapsed
+Read data files from: /usr/bin/../share/nmap
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 43.50 seconds
+           Raw packets sent: 1004 (44.152KB) | Rcvd: 1001 (40.040KB)

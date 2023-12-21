@@ -1,0 +1,51 @@
+===============================================================
+Gobuster v3.1.0
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://spectra.htb/main
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                /usr/share/wordlists/dirb/big.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.1.0
+[+] Timeout:                 10s
+===============================================================
+2021/06/19 16:22:02 Starting gobuster in directory enumeration mode
+===============================================================
+/wp-admin             (Status: 301) [Size: 169] [--> http://spectra.htb/main/wp-admin/]
+/wp-content           (Status: 301) [Size: 169] [--> http://spectra.htb/main/wp-content/]
+/wp-includes          (Status: 301) [Size: 169] [--> http://spectra.htb/main/wp-includes/]
+/zipcode              (Status: 403) [Size: 153]                                           
+/zipcodes             (Status: 403) [Size: 153]                                           
+/zipfiles             (Status: 403) [Size: 153]                                           
+/zipimport            (Status: 403) [Size: 153]                                           
+/zips                 (Status: 403) [Size: 153]                                           
+/zipped               (Status: 403) [Size: 153]                                           
+/zixun                (Status: 403) [Size: 153]                                           
+/zl                   (Status: 403) [Size: 153]                                           
+/zlk                  (Status: 403) [Size: 153]                                           
+/zm                   (Status: 403) [Size: 153]                                           
+/zmail                (Status: 403) [Size: 153]                                           
+/zmodem               (Status: 403) [Size: 153]                                           
+/zobacz               (Status: 403) [Size: 153]                                           
+/zoek                 (Status: 403) [Size: 153]                                           
+/zoeken               (Status: 403) [Size: 153]                                           
+/zold                 (Status: 403) [Size: 153]                                           
+/zombie               (Status: 403) [Size: 153]                                           
+/zona                 (Status: 403) [Size: 153]                                           
+/zone                 (Status: 403) [Size: 153]                                           
+/zones                (Status: 403) [Size: 153]                                           
+/zoo                  (Status: 403) [Size: 153]                                           
+/zoom                 (Status: 403) [Size: 153]                                           
+/zoomf                (Status: 403) [Size: 153]                                           
+/zoomify              (Status: 403) [Size: 153]                                           
+/zoomsearch           (Status: 403) [Size: 153]                                           
+/zoomf-search         (Status: 403) [Size: 153]                                           
+/zoos                 (Status: 403) [Size: 153]                                           
+/zope                 (Status: 403) [Size: 153]                                           
+/zp                   (Status: 403) [Size: 153]                                           
+/zorro                (Status: 403) [Size: 153]                                           
+/zorum                (Status: 403) [Size: 153]                                           
+===============================================================
+2021/06/19 16:23:33 Finished
+===============================================================

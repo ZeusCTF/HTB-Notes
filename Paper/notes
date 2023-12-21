@@ -1,0 +1,103 @@
+PORT    STATE SERVICE  VERSION
+22/tcp  open  ssh      OpenSSH 8.0 (protocol 2.0)
+| ssh-hostkey: 
+|   2048 10:05:ea:50:56:a6:00:cb:1c:9c:93:df:5f:83:e0:64 (RSA)
+|   256 58:8c:82:1c:c6:63:2a:83:87:5c:2f:2b:4f:4d:c3:79 (ECDSA)
+|_  256 31:78:af:d1:3b:c4:2e:9d:60:4e:eb:5d:03:ec:a0:22 (ED25519)
+80/tcp  open  http     Apache httpd 2.4.37 ((centos) OpenSSL/1.1.1k mod_fcgid/2.3.9)
+| http-methods: 
+|_  Potentially risky methods: TRACE
+|_http-generator: HTML Tidy for HTML5 for Linux version 5.7.28
+|_http-title: HTTP Server Test Page powered by CentOS
+|_http-server-header: Apache/2.4.37 (centos) OpenSSL/1.1.1k mod_fcgid/2.3.9
+443/tcp open  ssl/http Apache httpd 2.4.37 ((centos) OpenSSL/1.1.1k mod_fcgid/2.3.9)
+| http-methods: 
+|_  Potentially risky methods: TRACE
+|_http-generator: HTML Tidy for HTML5 for Linux version 5.7.28
+|_http-title: HTTP Server Test Page powered by CentOS
+| ssl-cert: Subject: commonName=localhost.localdomain/organizationName=Unspecified/countryName=US
+| Subject Alternative Name: DNS:localhost.localdomain
+| Not valid before: 2021-07-03T08:52:34
+|_Not valid after:  2022-07-08T10:32:34
+| tls-alpn: 
+|_  http/1.1
+|_ssl-date: TLS randomness does not represent time
+|_http-server-header: Apache/2.4.37 (centos) OpenSSL/1.1.1k mod_fcgid/2.3.9
+
+of note, a UDP scan revealed this:
+PORT     STATE         SERVICE
+5353/udp open|filtered zeroconf
+
+
+
+A few things to note from this scan, it looks like there are two ports open for the web server, http + https.  I wasn't able to find a difference between the two yet, nor was I able to gather any info from the cert.
+
+Oddly, I was trying to fingerpring the site and got a "file not found" when searching for /index.php but that's a different error that searching for \c you get a "requested file is not found".
+
+I was looking at some payloads, and found this header being returned in Burp:
+X-Backend-Server: office.paper
+
+And what do you know, after some research, I found that this header is used with proxies to determine where the backend request goes - but this incidentally leaks the server's hostname.  So, I changed the Host header to office.paper and got a completely different response.  Adding this to the hosts file allows us to go directly to this server instead.
+
+I ran gobuster and saw wp-config pop up, which immediately led to me running wp-scan at the same time.
+
+WPScan:
+
+Users - creedthoughts, nick, prisonmike
+Theme - construction-techup
+Version - 5.2.3 (indicated to be insecure)
+
+A comment on the page may lead to something interesting:
+Michael, you should remove the secret content from your drafts ASAP, as they are not that secure as you think!
+
+Had to cut the scan short, but gobuster found:
+/index.php            (Status: 301) [Size: 1] [--> http://office.paper/]
+/wp-content           (Status: 301) [Size: 239] [--> http://office.paper/wp-content/]
+/wp-login.php         (Status: 200) [Size: 3344]                                     
+/manual               (Status: 301) [Size: 235] [--> http://office.paper/manual/]    
+/wp-includes          (Status: 301) [Size: 240] [--> http://office.paper/wp-includes/]
+/wp-trackback.php     (Status: 200) [Size: 136]                                       
+/wp-admin             (Status: 301) [Size: 237] [--> http://office.paper/wp-admin/]   
+/wp-signup.php        (Status: 302) [Size: 1] [--> http://office.paper/wp-login.php?action=register]
+
+So we got stuck again, then I decided to run a vhost enum and found:  chat.office.paper
+This led to me finding it's hosted via rocketchat?  Which has these vulns that can be found via searchsploit, but for some reason I wasn't able to get the oauthtool pip package installed
+
+
+Oh boy, so let's keep the above in the memory banks for now, but I auctually found a blogpost on the wpscan site indicating a vulnerability in which you can view blog posts in a users drafts with this payload:
+https://wpscan.com/vulnerability/9909
+
+http://office.paper/?static=1
+
+
+http://chat.office.paper/register/8qozr226AhkCHZdyY
+this is the secret URL ^, and it looks like Nick, Michael are two users.
+
+So, we did it lmao.  Basically, the bot has a form of bypass within the commands it allows you to run.
+Meaning, you can perform an 'ls' on the sale directory by default, but if you run sale/../../ you can view upper
+directories.  Doing this you find that the bot is 'hubot' and reviewing some documentation:
+
+json otherwise a lot of errors will be thrown during the start up of your hubot. You can find a list of dependencies for a script in the documentation header at the top of the script. Restart your robot, and you're good to go. All the scripts in this repository are located in src/scripts
+https://developer.rocket.chat/bots/creating-your-own-bot-from-scratch/develop-a-hubot-bot
+
+You learn that it can run other scripts, so basically you have to navigate to the directory outlined, and go into the script dir, in which there is a cmd.coffee that tells you how to run bash commands.
+
+
+I just used the tcp default rev shell
+
+		-> User flag
+----------------------------------------------------
+
+Queenofblad3s!23
+
+Sudo version 1.8.29                                                                                                              Vulnerable to CVE-2021-3560
+
+ https://book.hacktricks.xyz/linux-unix/privilege-escalation/runc-privilege-escalation                                           
+runc was found in /usr/bin/runc, you may be able to escalate privileges with it 
+
+the exploit was the cve, you just ran it and got root
+
+
+
+
+

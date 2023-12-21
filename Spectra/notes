@@ -1,0 +1,31 @@
+lost previous notes...
+
+ip = 10.10.10.229
+
+If you click the testing link, you get sent to a database error page.  Navigating one dir up, you see a bunch of files, the wp-config.php.save has:
+
+The name of the database for WordPress */
+define( 'DB_NAME', 'dev' );
+
+/** MySQL database username */
+define( 'DB_USER', 'devtest' );
+
+/** MySQL database password */
+define( 'DB_PASSWORD', 'devteam01' )
+
+we can login to the main wp-admin prompt using the administrator acc (found on the normal page) and the pass shown here.
+
+(my ip = 10.10.15.29)
+
+users:
+administrator
+users on box:
+chronos
+katie
+
+SummerHereWeCome!!-> found in /etc/autologin/passwd I guess check this in future?  It's Katies' pass, found using the msf wp_admin_shell_upload module, although this shell is pretty shit
+
+----------
+to exploit to root, we can run /sbin/initctl, which is a startup function.  
+We can see there are a few test2.conf files, which show the script format needed for the initctl jobs.  Creating a new file named test, then altering the script to include a payload allows us to run sudo /sbin/init start test.  This then starts the payload
+

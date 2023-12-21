@@ -1,0 +1,95 @@
+22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   3072 24:c2:95:a5:c3:0b:3f:f3:17:3c:68:d7:af:2b:53:38 (RSA)
+|   256 b1:41:77:99:46:9a:6c:5d:d2:98:2f:c0:32:9a:ce:03 (ECDSA)
+|_  256 e7:36:43:3b:a9:47:8a:19:01:58:b2:bc:89:f6:51:08 (ED25519)
+80/tcp open  http    Apache httpd 2.4.41 ((Ubuntu))
+|_http-server-header: Apache/2.4.41 (Ubuntu)
+|_http-title: Play | Landing
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+The main site has a few mentions of panda.htb, so I added that to my hosts file and that seems to work fine.  Some quick, face-value enumeration suggest that there could be something vulnerable with the contact page as the entries for this page get sent as params to the home page.
+
+Also worth noting that /index.php is a 404 error, while /index.html is not
+
+
+PORT      STATE         SERVICE
+161/udp   open          snmp
+996/udp   open|filtered vsinet
+3456/udp  open|filtered IISrpc-or-vat
+5000/udp  open|filtered upnp
+32768/udp open|filtered omad
+
+snmpwalk might need to be used here...
+
+A comment from the fourms:
+
+foothold - be thorough with your initial scans, theres more than stateful connections. It’s that “simple”, find that protocol. Enum it hard.
+
+https://book.hacktricks.xyz/pentesting/pentesting-snmp
+
+[+] 10.10.11.136:161 - Login Successful: public (Access level: read-only); Proof (sysDescr.0): Linux pandora 5.4.0-91-generic #102-Ubuntu SMP Fri Nov 5 16:31:28 UTC 2021 x86_64
+
+I ran snmpwalk with via this command `snmpwalk -v1 -c public <ip> . > <file>` I yoinked from 0xdf and found this in the output:
+"-c sleep 30; /bin/bash -c '/usr/bin/host_check -u daniel -p HotelBabylon23'"
+
+The above ^ turned out to be SSH creds for the daniel user, and now it looks like we need to get the "matt" users creds.
+-----------------------
+So while on the box, I ran `ps -aux` and found this file, which was also in the snmpwalk output: /usr/bin/host_check
+Interestingly, this file is an ELF executable, and if you try to read it this is the output:
+
+PandoraFMS host check utilityNandora_console/include/api.php?op=get&op2=all_agents&return_type=csv&other_mode=url_encode_separator_%7C&user=daniel
+Please check your credentials.
+Terminating program!Host check successful!
+Terminating program!Ussage: ./host_check -u username -p password.Two arguments expected
+
+If you run `ss -lntp` you see a few ports listening, one of which is 80, which prompted me to curl this, and we actually got output that was different than the public site.
+
+So, what this probably means is that chisel will need to be used to create a tunnel for this site, and I found this page on GitHub:
+
+https://github.com/EnginDemirbilek/EnginDemirbilek.github.io/blob/master/pandorafms-rce.html
+
+That might be the next step forward.
+
+Holy shit this was aids, tunneling for whatever reason is stupid complicated to me.
+
+ssh daniel@10.10.11.136 -L 9001:127.0.0.1:80 
+
+This sends traffic on our kali instance on port 9001, to the remote machine on port 80.
+
+Ignore the github link (for now), I think the real exploit has something to do with sql:
+
+user - very tough for me. Thanks to @TheCyberGeek for the nudge. As mentioned before, research the app on the Internet, research the version. This app seems full of potentially unproven holes. There is some research on the way the app checks who you are when you ask for things. That’s all I can say without spoiling it.
+
+https://blog.sonarsource.com/pandora-fms-742-critical-code-vulnerabilities-explained/
+
+this might be a good resource: https://github.com/ycdxsb/PocOrExp_in_Github/blob/main/2021/README.md
+but it wouldnt load
+
+
+A SQL injection vulnerability in the pandora_console component of Artica Pandora FMS 742 allows an unauthenticated attacker to upgrade his unprivileged session via the /include/chart_generator.php session_id parameter, leading to a login bypass.
+
+    https://github.com/ibnuuby/CVE-2021-32099 : starts forks
+
+    https://github.com/zjicmDarkWing/CVE-2021-32099 : starts forks
+
+    https://github.com/l3eol3eo/CVE-2021-32099_SQLi : starts forks
+
+This last one worked the best, the payload worked and I just had to combine that with the video on portswiggers site to get a shell.  - As for the shell, I just zipped the php rev shell and somehow I got a connection back...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

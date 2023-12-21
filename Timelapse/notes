@@ -1,0 +1,231 @@
+Interestingly, for this scan I had to add the -Pn option, which I haven't had to before.
+Also, I suppose one method for determining the underlying OS can just be based on a ping to the machine, this box had a TTL of 127, while I think per Ippsec Linux boxes should have a TTL of 60?
+
+PORT     STATE SERVICE           VERSION
+53/tcp   open  domain            Simple DNS Plus
+88/tcp   open  kerberos-sec      Microsoft Windows Kerberos (server time: 2022-03-30 04:30:06Z)
+135/tcp  open  msrpc             Microsoft Windows RPC
+139/tcp  open  netbios-ssn       Microsoft Windows netbios-ssn
+389/tcp  open  ldap              Microsoft Windows Active Directory LDAP (Domain: timelapse.htb0., Site: Default-First-Site-Name)
+445/tcp  open  microsoft-ds?
+464/tcp  open  kpasswd5?
+593/tcp  open  ncacn_http        Microsoft Windows RPC over HTTP 1.0
+636/tcp  open  ldapssl?
+3268/tcp open  ldap              Microsoft Windows Active Directory LDAP (Domain: timelapse.htb0., Site: Default-First-Site-Name)
+3269/tcp open  globalcatLDAPssl?
+Service Info: Host: DC01; OS: Windows; CPE: cpe:/o:microsoft:windows
+
+No web server on this, which is also a bit different.  I see a domain here (timelapse.htb0.)
+
+
+I then ran another full tcp port scan just based on how many ports are open:
+
+PORT      STATE SERVICE       VERSION
+53/tcp    open  domain        Simple DNS Plus
+88/tcp    open  kerberos-sec  Microsoft Windows Kerberos (server time: 2022-04-01 05:49:52Z)
+135/tcp   open  msrpc         Microsoft Windows RPC
+139/tcp   open  netbios-ssn   Microsoft Windows netbios-ssn
+389/tcp   open  ldap          Microsoft Windows Active Directory LDAP (Domain: timelapse.htb0., Site: Default-First-Site-Name)
+445/tcp   open  microsoft-ds?
+464/tcp   open  kpasswd5?
+593/tcp   open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+636/tcp   open  tcpwrapped
+5986/tcp  open  ssl/http      Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_ssl-date: 2022-04-01T05:51:24+00:00; +7h59m59s from scanner time.
+| ssl-cert: Subject: commonName=dc01.timelapse.htb
+| Not valid before: 2021-10-25T14:05:29
+|_Not valid after:  2022-10-25T14:25:29
+|_http-server-header: Microsoft-HTTPAPI/2.0
+| tls-alpn: 
+|_  http/1.1
+|_http-title: Not Found
+9389/tcp  open  mc-nmf        .NET Message Framing
+49673/tcp open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+49696/tcp open  msrpc         Microsoft Windows RPC
+52192/tcp open  msrpc         Microsoft Windows RPC
+Service Info: Host: DC01; OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+| smb2-time: 
+|   date: 2022-04-01T05:50:45
+|_  start_date: N/A
+| smb2-security-mode: 
+|   3.1.1: 
+|_    Message signing enabled and required
+|_clock-skew: mean: 7h59m59s, deviation: 0s, median: 7h59m58s
+
+
+
+Then I googled for an enumeration tool for ldap and found an nmap scrpit which output this:
+
+3268/tcp open  ldap          Microsoft Windows Active Directory LDAP (Domain: timelapse.htb, Site: Default-First-Site-Name)
+| ldap-rootdse: 
+| LDAP Results
+|   <ROOT>
+|       domainFunctionality: 7
+|       forestFunctionality: 7
+|       domainControllerFunctionality: 7
+|       rootDomainNamingContext: DC=timelapse,DC=htb
+|       ldapServiceName: timelapse.htb:dc01$@TIMELAPSE.HTB
+|       isGlobalCatalogReady: TRUE
+|       supportedSASLMechanisms: GSSAPI
+|       supportedSASLMechanisms: GSS-SPNEGO
+|       supportedSASLMechanisms: EXTERNAL
+|       supportedSASLMechanisms: DIGEST-MD5
+|       supportedLDAPVersion: 3
+|       supportedLDAPVersion: 2
+|       supportedLDAPPolicies: MaxPoolThreads
+|       supportedLDAPPolicies: MaxPercentDirSyncRequests
+|       supportedLDAPPolicies: MaxDatagramRecv
+|       supportedLDAPPolicies: MaxReceiveBuffer
+|       supportedLDAPPolicies: InitRecvTimeout
+|       supportedLDAPPolicies: MaxConnections
+|       supportedLDAPPolicies: MaxConnIdleTime
+|       supportedLDAPPolicies: MaxPageSize
+|       supportedLDAPPolicies: MaxBatchReturnMessages
+|       supportedLDAPPolicies: MaxQueryDuration
+|       supportedLDAPPolicies: MaxDirSyncDuration
+|       supportedLDAPPolicies: MaxTempTableSize
+|       supportedLDAPPolicies: MaxResultSetSize
+|       supportedLDAPPolicies: MinResultSets
+|       supportedLDAPPolicies: MaxResultSetsPerConn
+|       supportedLDAPPolicies: MaxNotificationPerConn
+|       supportedLDAPPolicies: MaxValRange
+|       supportedLDAPPolicies: MaxValRangeTransitive
+|       supportedLDAPPolicies: ThreadMemoryLimit
+|       supportedLDAPPolicies: SystemMemoryLimitPercent
+|       supportedControl: 1.2.840.113556.1.4.319
+|       supportedControl: 1.2.840.113556.1.4.801
+|       supportedControl: 1.2.840.113556.1.4.473
+|       supportedControl: 1.2.840.113556.1.4.528
+|       supportedControl: 1.2.840.113556.1.4.417
+|       supportedControl: 1.2.840.113556.1.4.619
+|       supportedControl: 1.2.840.113556.1.4.841
+|       supportedControl: 1.2.840.113556.1.4.529
+|       supportedControl: 1.2.840.113556.1.4.805
+|       supportedControl: 1.2.840.113556.1.4.521
+|       supportedControl: 1.2.840.113556.1.4.970
+|       supportedControl: 1.2.840.113556.1.4.1338
+|       supportedControl: 1.2.840.113556.1.4.474
+|       supportedControl: 1.2.840.113556.1.4.1339
+|       supportedControl: 1.2.840.113556.1.4.1340
+|       supportedControl: 1.2.840.113556.1.4.1413
+|       supportedControl: 2.16.840.1.113730.3.4.9
+|       supportedControl: 2.16.840.1.113730.3.4.10
+|       supportedControl: 1.2.840.113556.1.4.1504
+|       supportedControl: 1.2.840.113556.1.4.1852
+|       supportedControl: 1.2.840.113556.1.4.802
+|       supportedControl: 1.2.840.113556.1.4.1907
+|       supportedControl: 1.2.840.113556.1.4.1948
+|       supportedControl: 1.2.840.113556.1.4.1974
+|       supportedControl: 1.2.840.113556.1.4.1341
+|       supportedControl: 1.2.840.113556.1.4.2026
+|       supportedControl: 1.2.840.113556.1.4.2064
+|       supportedControl: 1.2.840.113556.1.4.2065
+|       supportedControl: 1.2.840.113556.1.4.2066
+|       supportedControl: 1.2.840.113556.1.4.2090
+|       supportedControl: 1.2.840.113556.1.4.2205
+|       supportedControl: 1.2.840.113556.1.4.2204
+|       supportedControl: 1.2.840.113556.1.4.2206
+|       supportedControl: 1.2.840.113556.1.4.2211
+|       supportedControl: 1.2.840.113556.1.4.2239
+|       supportedControl: 1.2.840.113556.1.4.2255
+|       supportedControl: 1.2.840.113556.1.4.2256
+|       supportedControl: 1.2.840.113556.1.4.2309
+|       supportedControl: 1.2.840.113556.1.4.2330
+|       supportedControl: 1.2.840.113556.1.4.2354
+|       supportedCapabilities: 1.2.840.113556.1.4.800
+|       supportedCapabilities: 1.2.840.113556.1.4.1670
+|       supportedCapabilities: 1.2.840.113556.1.4.1791
+|       supportedCapabilities: 1.2.840.113556.1.4.1935
+|       supportedCapabilities: 1.2.840.113556.1.4.2080
+|       supportedCapabilities: 1.2.840.113556.1.4.2237
+|       subschemaSubentry: CN=Aggregate,CN=Schema,CN=Configuration,DC=timelapse,DC=htb
+|       serverName: CN=DC01,CN=Servers,CN=Default-First-Site-Name,CN=Sites,CN=Configuration,DC=timelapse,DC=htb
+|       schemaNamingContext: CN=Schema,CN=Configuration,DC=timelapse,DC=htb
+|       namingContexts: DC=timelapse,DC=htb
+|       namingContexts: CN=Configuration,DC=timelapse,DC=htb
+|       namingContexts: CN=Schema,CN=Configuration,DC=timelapse,DC=htb
+|       namingContexts: DC=DomainDnsZones,DC=timelapse,DC=htb
+|       namingContexts: DC=ForestDnsZones,DC=timelapse,DC=htb
+|       isSynchronized: TRUE
+|       highestCommittedUSN: 143489
+|       dsServiceName: CN=NTDS Settings,CN=DC01,CN=Servers,CN=Default-First-Site-Name,CN=Sites,CN=Configuration,DC=timelapse,DC=htb
+|       dnsHostName: dc01.timelapse.htb
+|       defaultNamingContext: DC=timelapse,DC=htb
+|       currentTime: 20220330045837.0Z
+|_      configurationNamingContext: CN=Configuration,DC=timelapse,DC=htb
+3269/tcp open  tcpwrapped
+Service Info: Host: DC01; OS: Windows; CPE: cpe:/o:microsoft:windows
+
+It should be noted that I found this command: ldapsearch -H ldap://10.10.11.152:389 -x -LLL -s base  which got the same output as the above
+
+I then went to enum smbclient:
+smbclient -L 10.10.11.152                                                                                       1
+
+Enter WORKGROUP\kalibarry's password: 
+
+        Sharename       Type      Comment
+        ---------       ----      -------
+        ADMIN$          Disk      Remote Admin
+        C$              Disk      Default share
+        IPC$            IPC       Remote IPC
+        NETLOGON        Disk      Logon server share 
+        Shares          Disk      
+        SYSVOL          Disk      Logon server share 
+        
+- connect with this: smbclient \\\\10.10.11.152\\Shares
+
+I found a zip file in the shares dir, as well as a few files that reference LAPS.  If you crack the zip, you get a pfx file - which appears to be a certificate of some sort certificate, and if you use strings I got a username (I think): legacyy@timelapse.htb0
+
+Okay so you can crack the pfx password by using pfx2john, and you get this: thuglegacy
+
+I extracted a crt and rsa keyfile from this ^  using this article: https://medium.com/beingcoders/easy-way-to-convert-pfx-to-crt-key-files-in-10-minutes-683849242c65
+
+The above was just an idea found from the htb fourms, someone said you could extract *something* from a pfx file and yeah....
+
+That being said, I googled how you could use a .crt or .key file with winrm but couldn't really find anything.  So I ended up going to a great resource (0xdf's blog) and found his writeup of Sizzle, and he had a part where he used a modified Ruby script to authenticate via ssl with the key + crt.  And if you follow this, you get the user flag!
+--------------Root----------------------
+
+So I did `whoami /all` and found some interesting stuff but who knows if it leads anywhere.  Complete transparency here, the fourms also mentioned `HISTORY` and someone even put 'like .bash_history' but for windows.  Which immediately made me think of the PS history file...  So I just looked up where it's located, and again, an 0xdf article came up :).  This file contained:
+
+whoami
+ipconfig /all
+netstat -ano |select-string LIST
+$so = New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck
+$p = ConvertTo-SecureString 'E3R$Q62^12p7PLlC%KWaxuaV' -AsPlainText -Force
+$c = New-Object System.Management.Automation.PSCredential ('svc_deploy', $p)
+invoke-command -computername localhost -credential $c -port 5986 -usessl -
+SessionOption $so -scriptblock {whoami}
+get-aduser -filter * -properties *
+exit
+
+
+svc_deploy | E3R$Q62^12p7PLlC%KWaxuaV
+
+I just used the same script from before, but reversed the changes and added the creds in
+
+If you run `whoami /all` you can see this service account is a member of a LAPSreader (or something like that) group.  From prior knowledge I know that LAPS is a password-related thing.  So, I did some googling and found this article:
+
+https://www.n00py.io/2020/12/dumping-laps-passwords-from-linux/
+
+which went through how to dump LAPS passwords via a python script.  After dumping this, you get the admin password.
+
+GG!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

