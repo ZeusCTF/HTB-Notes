@@ -1,0 +1,75 @@
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2023-11-26 20:25 EST
+Nmap scan report for 10.129.163.43
+Host is up (0.043s latency).
+Not shown: 998 closed tcp ports (conn-refused)
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.9 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   3072 48:ad:d5:b8:3a:9f:bc:be:f7:e8:20:1e:f6:bf:de:ae (RSA)
+|   256 b7:89:6c:0b:20:ed:49:b2:c1:86:7c:29:92:74:1c:1f (ECDSA)
+|_  256 18:cd:9d:08:a6:21:a8:b8:b6:f7:9f:8d:40:51:54:fb (ED25519)
+80/tcp open  http    nginx 1.18.0 (Ubuntu)
+|_http-title: Did not follow redirect to http://devvortex.htb/
+|_http-server-header: nginx/1.18.0 (Ubuntu)
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+─$ nmap -p- 10.129.163.43               
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2023-11-26 20:25 EST
+Nmap scan report for 10.129.163.43
+Host is up (0.042s latency).
+Not shown: 65533 closed tcp ports (conn-refused)
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
+
+domain name of "http://devvortex.htb/" per the output
+
+site info:
+info@DevVortex.htb - email leaked
+http://devvortex.htb/index.php - 404
+http://devvortex.htb/index.html - 200
+http://devvortex.htb/contact.html - contact page, requesting user input
+-> note, web requests to this page (after hitting submit) appear to just be GET requests to the same page, no data being POSTed
+
+possible users:
+emily r
+michael b
+lewis g
+
+
+gobuster vhost -u devvortex.htb -w /opt/SecLists/Discovery/DNS/subdomains-top1million-5000.txt
+leaks the dev subdomain
+
+I checked what happens if you view a page that doesnt exist, you get a specific error - upon which if you google this error you find that it's specific to Joomla.
+
+Found a reference to a Joomla scanner online, and figured I would try it.  The scanner mentioned that this version is out of date - googling for vulnerabilites lists a few, but the below seems the most useful:
+https://www.cvedetails.com/cve/CVE-2023-23752/
+
+Exploit on GH does exist, running that gives us an error though.  As I was going through the code, it looks like it just requests a specific page (lol), accessing this page does give us some information, notably some credentials:
+
+lewis
+P4ntherg0t1n5r3c0n##
+
+However these^ are not for SSH, so lets try something else.  I ran a gobuster on the dev subdomain, and did notice that an enpoint exists of /administrator, which asks for creds - thanks to lewis we have access.
+
+Greeted by a notification that "We have detected that your server is using PHP 7.4.3" -> not sure that this will have any effect here though.
+
+It is indeed not needed, there is a templates section that has a bunch of PHP files.  Similar to a lot of the THM boxes, you just replace one (easiest is prob the error page) with a php reverse shell, then you can request anything that will fail to get a shell.
+
+Afterwords, I couldnt really find anything as the user we have, but there is a db server running, and I was able to login with the creds from earlier - dumping the user table:
+
+649 | lewis      | lewis    | lewis@devvortex.htb | $2y$10$6V52x.SD8Xc7hNlVwUTrI.ax4BIAYuhVBMVvnYWRceBmy8XdEzm1u 
+650 | logan paul | logan    | logan@devvortex.htb | $2y$10$IT4k5kmSGvHSO9d6M/1w0eYiB5Ne9XzArQRFJTGThNiy/yBtkIj12 
+
+I'm just going to focuse on logan, considering they have the /home dir.  This does indeed crack, and gives us the user flag :)
+------------------------------------
+I forgot to write the pass down after I cracked it (coming back to this after a break), and I couldn't rerun john against it, I guess it saves hashes - something like that at least?  Just run the below command for future reference:
+john hash --show
+
+(tequieromucho)
+
+Basic enum with sudo -l shows that you can run apport-cli, I didnt find anything on gtfo bins, but just googling for a vulnerability in this cmdlet did return some results.  I actually came across this article as a PoC, but didnt realize until the end that it's literally for this HTB box...  But, oh well I guess...
+https://diegojoelcondoriquispe.medium.com/cve-2023-1326-poc-c8f2a59d0e00
+
+Got root following the guide
+

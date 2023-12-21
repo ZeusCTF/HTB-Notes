@@ -1,0 +1,29 @@
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.9p1 Ubuntu 3ubuntu0.4 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   256 3e:ea:45:4b:c5:d1:6d:6f:e2:d4:d1:3b:0a:3d:a9:4f (ECDSA)
+|_  256 64:cc:75:de:4a:e6:a5:b4:73:eb:3f:1b:cf:b4:e3:94 (ED25519)
+80/tcp open  http    nginx 1.18.0 (Ubuntu)
+|_http-title: Did not follow redirect to http://analytical.htb/
+|_http-server-header: nginx/1.18.0 (Ubuntu)
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+added analytical.htb to the hosts file.  The site has some email address listed:
+
+demo@analytical.com
+due@analytical.com
+
+
+The "login" tab redirects to a "data" subdomain.  http://data.analytical.htb/auth/forgot_password exists, but an admin has to reset the password.  The site appears to be running the Metabase CMS software? https://www.metabase.com/docs/latest/configuring-metabase/settings
+
+Just googling for vulnerabilities turns up this link: https://www.cvedetails.com/cve/CVE-2023-38646/, with this PoC: https://github.com/kh4sh3i/CVE-2023-38646.  The PoC at the GH link says that you can test if a site is vulnerable by going to this link: http://data.analytical.htb/api/session/properties, which does give some output, so I assume the vuln is applicable?
+
+
+That script didnt work for me, you need burp collaborator and I wasn't able to adjust it to get any output (didn't appear to be connecting...?)  Anyways, this script DID work "https://github.com/securezeron/CVE-2023-38646/blob/main/CVE-2023-38646-Reverse-Shell.py" however I just took the post_setup_validate function from the main file and adjusted it for my purposes and that worked for me to get a rev shell.
+
+After using the exploit, you get a shell on the box.  Some basic enumeration later, (running the env command) outputs:
+
+META_USER=metalytics
+META_PASS=An4lytics_ds20223#
+
+which is an SSH user for the machine.  User.txt obtained.

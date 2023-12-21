@@ -1,0 +1,65 @@
+Starting Nmap 7.94 ( https://nmap.org ) at 2023-08-21 19:12 EDT
+Nmap scan report for 10.10.11.227
+Host is up (0.042s latency).
+Not shown: 998 closed tcp ports (conn-refused)
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.9p1 Ubuntu 3ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   256 35:39:d4:39:40:4b:1f:61:86:dd:7c:37:bb:4b:98:9e (ECDSA)
+|_  256 1a:e9:72:be:8b:b1:05:d5:ef:fe:dd:80:d8:ef:c0:66 (ED25519)
+80/tcp open  http    nginx 1.18.0 (Ubuntu)
+|_http-title: Site doesn't have a title (text/html).
+|_http-server-header: nginx/1.18.0 (Ubuntu)
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+---------------------------------------------------------
+     
+Starting Nmap 7.94 ( https://nmap.org ) at 2023-08-21 19:13 EDT
+Nmap scan report for 10.10.11.227
+Host is up (0.037s latency).
+Not shown: 65533 closed tcp ports (conn-refused)
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
+
+Nmap done: 1 IP address (1 host up) scanned in 18.76 seconds
+               
+
+Http hosts a blank site, says "blah blah, visit tickets.keeper.htb/rt/               
+               
+               
+Add this to /etc/hosts, along with the naked domain just in case.  The tickets subdomain is just an install of "request tracker" which as implied, is a ticketing system.
+
+Default creds for this are root | password                          
+     
+The ticketing system does have a one ticket that contains an email convo.  Possible accounts: lnorgaard@keeper.htb
+
+Probably more related to the priv esc as the user ^ mentions saving a file to their desktop
+
+creds found on the ticket site in a comment: lnorgaard | Welcome2023!
+----------------------------------
+
+ss -lntp shows sql listening on 3306, port on 9000 and 8080.  (Note 8080 appears to be related to another attacker)
+
+two files exist in the users home directory.  The user.txt file, along with a zip file (RT3000.zip).  The zip file is owned by root, with our user having r perms to the file.  The following files are created after unzipping: KeePassDumpFull.dmp, passcodes.kdbx.
+
+Going off of the email "Do I need to update the version of the program first...?" and the files, https://keepass.info/help/base/repair.html suggests that you might be able to recover the db file.
+
+Based on the hint here, we can assume they are probably running an out of date version.  Some google-fu and I found this GH CVE for keepass: https://github.com/matro7sh/keepass-dump-masterkey.  Though running this gets some wierd phrase, with some assistance from the HTB fourms it looks like this is supposed to be a dessert in a foriegn language... Eventually I was able to find the passphrase of "rødgrød med fløde" through brute force - not a fan of this at all...
+
+First thing I noticed was the "network" section within the keepass db, this contains a password for the root user and an SSH key.  In theme of the box, the password didnt work, so let's try the SSH key.  First thing is to generate the right format, so I used puttygen to go from the .ppk to .pem file.
+
+After doing the above ^ I was able to ssh as root! 
+
+
+
+
+
+
+
+
+
+
+
+
+     
+                                                                 
