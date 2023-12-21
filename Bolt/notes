@@ -1,0 +1,15 @@
+Looks like there is two sites?  It could be just one...  However hosted on 443 + 80.  Nmap does show:
+commonName=passbolt.bolt.htb  -> so perhaps the hostname + subdomain?
+
+Accessing passbolt.bolt.htb over https notifes you that the service requires a vaild email on the domain
+
+So I tried to create an account on the site but I keep getting errors, I wonder if we could generate some fake emails with the given users to get access?
+
+joseph.garth@bolt.htb
+bonnie.green@bolt.htb
+jose.leos@bolt.htb
+
+j.leo@bolt.htb
+
+when trying the above emails, the server responds with an error:
+header":{"id":"5df71cc0-0d19-4235-b012-ff118491074e","status":"error","servertime":1632688910,"action":"1c717cd7-d236-55c4-a068-b9a0923b1927","message":"This user does not exist or has been deleted. Please contact your administrator.","url":"\/users\/recover.json?api-version=v2","code":404}

@@ -1,0 +1,23 @@
+10.10.10.245
+
+/capture intercepted redirect shows it's a guicorn server
+
+FTP:
+
+USER nathan
+PASS Buck3tH4TF0RM3!
+
+maybe the cap discussion has something:
+https://forum.hackthebox.eu/discussion/4764/official-cap-discussion
+
+it looks like you can move upwards through the directory structure but I cant find anything.
+
+If you look at 0.pcap, it looks like there is some way to upload files but I dont understand how to make it work....
+
+btw, you can use ftp via a webbrowser which may be easier
+
+The privesc is with Linux Capbilities, gtfobins has this python code:
+python3 -c 'import os; os.setuid(0); os.system("/bin/sh")'
+that I used to gain root, however hacktricks has a more detailied article that might be better:
+https://book.hacktricks.xyz/linux-unix/privilege-escalation/linux-capabilities
+

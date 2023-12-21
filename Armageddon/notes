@@ -1,0 +1,5 @@
+ip = 10.10.10.233
+
+looks like it is a php site, with mysql installed
+
+it looks like the cms ids Drupal, check the INSTALL.txt file as noted by the robots.txt for more info
