@@ -1,0 +1,49 @@
+Initial nmap:
+-----------------------------------------
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-01-21 14:50 EST
+Nmap scan report for 10.10.11.252
+Host is up (0.040s latency).
+Not shown: 997 closed tcp ports (conn-refused)
+PORT    STATE SERVICE  VERSION
+22/tcp  open  ssh      OpenSSH 8.4p1 Debian 5+deb11u3 (protocol 2.0)
+| ssh-hostkey: 
+|   3072 3e:21:d5:dc:2e:61:eb:8f:a6:3b:24:2a:b7:1c:05:d3 (RSA)
+|   256 39:11:42:3f:0c:25:00:08:d7:2f:1b:51:e0:43:9d:85 (ECDSA)
+|_  256 b0:6f:a0:0a:9e:df:b1:7a:49:78:86:b2:35:40:ec:95 (ED25519)
+80/tcp  open  http     nginx 1.18.0
+|_http-title: Did not follow redirect to https://bizness.htb/
+|_http-server-header: nginx/1.18.0
+443/tcp open  ssl/http nginx 1.18.0
+|_ssl-date: TLS randomness does not represent time
+| tls-nextprotoneg: 
+|_  http/1.1
+|_http-title: Did not follow redirect to https://bizness.htb/
+|_http-server-header: nginx/1.18.0
+| ssl-cert: Subject: organizationName=Internet Widgits Pty Ltd/stateOrProvinceName=Some-State/countryName=UK
+| Not valid before: 2023-12-14T20:03:40
+|_Not valid after:  2328-11-10T20:03:40
+| tls-alpn: 
+|_  http/1.1
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+
+secondary nmap:
+--------------------------
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-01-21 14:53 EST
+Nmap scan report for 10.10.11.252
+Host is up (0.038s latency).
+Not shown: 65325 closed tcp ports (conn-refused), 206 filtered tcp ports (no-response)
+PORT      STATE SERVICE
+22/tcp    open  ssh
+80/tcp    open  http
+443/tcp   open  https
+44699/tcp open  unknown
+
+
+Looks like a web server is running, not sure what 44699 is though.  I do see a hostname as well of "bizness.htb", so I'll add that to my hosts file.
+
+As a certificate isn't too common for CTFs, I tried navigating to the IP and via plain HTTP, though both redirected to the https site.
+The certificate itself also does not contain any additional information that would be useful, like subdomains, etc.  It's possible there may be something else, but nothing obvious as far as I can tell.
+
+
+
