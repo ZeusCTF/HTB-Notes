@@ -16,8 +16,12 @@ Nmap done: 1 IP address (1 host up) scanned in 23.02 seconds
 
 Navigating to the site, I'm prompted with a page asking for an email/pass to login.  Wappalyzer is indicating this is a Laravel site, with Nginx running on Ubuntu.  There is a password reset link which may be useful in the future.  Also worth noting, an Admin subdomain is referenced, I'll try brute-forcing others now.
 
-Registering an account doesn't appear to lead to anything interesting, just a page for a blog, but it's just a static page.  Default admin/admin creds for laravel dont work either.  The subdomain brute force didnt result in any additional domains being leaked, however, I may try another list.  
-
 a Gobuster on the admin subdomain didn't really find any additional pages, aside from these two:
 /uploads              (Status: 301) [Size: 178] [--> http://admin.usage.htb/uploads/]                                                                 
 /admin                (Status: 302) [Size: 402] [--> http://admin.usage.htb/admin/auth/login] 
+
+Registering an account doesn't appear to lead to anything interesting, just a page for a blog, but it's just a static page.  Default admin/admin creds for laravel dont work either.  The subdomain brute force didnt result in any additional domains being leaked, however, I may try another list.  
+
+Two cookies are set upon our login, a laravel_session cookie and xsrf_token.  Oddly, I am getting an HTTP 419 when trying to authenticate to the admin portal, which per a quick Google search indicates that my session may be timing out?  From this, it sounds like it's likely from the csrf tokens: https://stackoverflow.com/questions/46266553/why-does-the-laravel-api-return-a-419-status-code-on-post-and-put-methods
+
+I moved to testing the reset password page, which appears to be sql injectable as it returns a 500 when you add a '.  Running this: sqlmap -r req.txt --level=3 --risk=3 I did return a note that SQLMAP detected the backend db as MySQL, but further testing was stopped due to the server returning a bunch of 500 error codes.
