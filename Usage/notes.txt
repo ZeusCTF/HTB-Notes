@@ -279,3 +279,33 @@ set daemon  60
 set httpd port 2812
      use address 127.0.0.1
      allow admin:3nc0d3d_pa$$w0rd
+----------------------------------------------------------------------------------------------------------------
+Working on root here, some basic enum with "sudo -l" returns this:
+
+Matching Defaults entries for xander on usage:
+    env_reset, mail_badpass,
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin, use_pty
+
+User xander may run the following commands on usage:
+    (ALL : ALL) NOPASSWD: /usr/bin/usage_management
+    
+Running strings against this file returns this particular section:
+/var/www/html
+/usr/bin/7za a /var/backups/project.zip -tzip -snl -mmt -- *
+Error changing working directory to /var/www/html
+/usr/bin/mysqldump -A > /var/backups/mysql_backup.sql
+Password has been reset.
+Choose an option:
+1. Project Backup
+2. Backup MySQL data
+3. Reset admin password
+Enter your choice (1/2/3): 
+Invalid choice.
+
+Kind of a cool box, I found this article that details a "wildcard spare trick" that we can use to get root.  
+The only hangup here that I had, was that I guess I misunderstood what folder you're supposed to execute this in.
+For this to work, you have to run it in the /var/www/html dir, but from reading the article, to me it sounds like you would need to run this in the /var/backups dir, but the xander account doesnt have write access there...
+
+
+
+
